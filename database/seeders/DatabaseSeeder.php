@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => 'Admin TU',
             'email' => 'admin@siatu.sch.id',
-            'password' => Hash::make('sman4sby2024'),
+            'password' => Hash::make('sman4sby2025'),
             'role' => 'Admin',
             'status' => 'active',
             'email_verified_at' => now(),
