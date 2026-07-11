@@ -2,18 +2,19 @@
 
 namespace App\Support;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use ZipArchive;
 
 class ReportExporter
 {
-    public static function download(array $rows, string $baseName, string $format)
+    public static function download(array $rows, string $baseName, string $format, array $meta = [])
     {
         $format = strtolower($format ?: 'csv');
         return match ($format) {
             'xlsx', 'excel' => self::xlsx($rows, $baseName),
             'word', 'doc', 'docx' => self::word($rows, $baseName),
-            'pdf' => self::pdf($rows, $baseName),
+            'pdf' => self::pdf($rows, $baseName, $meta),
             default => self::csv($rows, $baseName),
         };
     }
@@ -68,38 +69,40 @@ class ReportExporter
         return response()->download($tmp, $baseName . '.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])->deleteFileAfterSend(true);
     }
 
-    public static function pdf(array $rows, string $baseName)
+    public static function pdf(array $rows, string $baseName, array $meta = [])
     {
-        $lines = [strtoupper(str_replace('-', ' ', $baseName)), ''];
-        foreach ($rows as $row) $lines[] = implode(' | ', array_map(fn ($v) => (string) $v, $row));
-        $content = self::pdfContent($lines);
-        return response($content, 200, [
-            'Content-Type' => 'application/pdf',
+        // Pisahkan header (baris pertama) dari data
+        $headers = count($rows) > 0 ? array_shift($rows) : [];
+
+        // Parse nama file jadi judul yang lebih bersih
+        // baseName format: rekap-surat_masuk-20260711-103254
+        $parts       = explode('-', $baseName);
+        $tipePart    = $parts[1] ?? 'laporan';
+        $judulMap    = [
+            'surat_masuk'  => 'Surat Masuk',
+            'surat keluar' => 'Surat Keluar',
+            'surat_keluar' => 'Surat Keluar',
+            'disposisi'    => 'Disposisi',
+        ];
+        $judulLaporan = $judulMap[$tipePart] ?? Str::title(str_replace(['_', '-'], ' ', $tipePart));
+
+        $pdf = Pdf::loadView('pdf.rekap', [
+            'judulLaporan' => $judulLaporan,
+            'headers'      => $headers,
+            'rows'         => $rows,
+            'periodeAwal'  => $meta['mulai'] ?? null,
+            'periodeAkhir' => $meta['selesai'] ?? null,
+            'klasifikasi'  => $meta['klasifikasi'] ?? null,
+        ])
+        ->setPaper('a4', 'portrait')
+        ->setOption('isHtml5ParserEnabled', true)
+        ->setOption('isRemoteEnabled', true)
+        ->setOption('defaultFont', 'DejaVu Sans');
+
+        return response($pdf->output(), 200, [
+            'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $baseName . '.pdf"',
         ]);
-    }
-
-    private static function pdfContent(array $lines): string
-    {
-        $text = "BT\n/F1 10 Tf\n50 790 Td\n";
-        foreach (array_slice($lines, 0, 55) as $line) {
-            $safe = str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], mb_strimwidth($line, 0, 115, '...'));
-            $text .= '(' . $safe . ") Tj\n0 -14 Td\n";
-        }
-        $text .= "ET";
-        $objects = [];
-        $objects[] = '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj';
-        $objects[] = '2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj';
-        $objects[] = '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj';
-        $objects[] = '4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj';
-        $objects[] = '5 0 obj << /Length ' . strlen($text) . " >> stream\n" . $text . "\nendstream endobj";
-        $pdf = "%PDF-1.4\n";
-        $offsets = [0];
-        foreach ($objects as $obj) { $offsets[] = strlen($pdf); $pdf .= $obj . "\n"; }
-        $xref = strlen($pdf);
-        $pdf .= "xref\n0 " . (count($objects) + 1) . "\n0000000000 65535 f \n";
-        for ($i = 1; $i <= count($objects); $i++) $pdf .= str_pad((string) $offsets[$i], 10, '0', STR_PAD_LEFT) . " 00000 n \n";
-        return $pdf . "trailer << /Size " . (count($objects) + 1) . " /Root 1 0 R >>\nstartxref\n" . $xref . "\n%%EOF";
     }
 
     private static function col(int $index): string

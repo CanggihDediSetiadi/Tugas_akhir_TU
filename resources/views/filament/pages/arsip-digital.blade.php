@@ -1,4 +1,4 @@
-﻿{{-- SMAN 4 Surabaya â€“ Halaman Arsip Digital --}}
+{{-- SMAN 4 Surabaya â€“ Halaman Arsip Digital --}}
 <x-filament-panels::page>
     {{ $this->content }}
 

@@ -1,4 +1,4 @@
-﻿{{-- SMAN 4 Surabaya - Halaman Cetak Rekap --}}
+{{-- SMAN 4 Surabaya - Halaman Cetak Rekap --}}
 <x-filament-panels::page>
     {{ $this->content }}
 

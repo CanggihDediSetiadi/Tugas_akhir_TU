@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Support\Facades\Route;
 
@@ -46,7 +46,8 @@ Route::get('/admin/cetak-rekap/download', function (\Illuminate\Http\Request $re
         }
     }
 
-    return \App\Support\ReportExporter::download($rows, $baseName, $format);
+    $meta = ['mulai' => $mulai, 'selesai' => $selesai, 'klasifikasi' => $klasifikasi];
+    return \App\Support\ReportExporter::download($rows, $baseName, $format, $meta);
 })->middleware('auth')->name('rekap.download');
 Route::get('/admin/arsip-digital/{arsip}/download', function (\App\Models\ArsipDigital $arsip) {
     abort_unless($arsip->path_file, 404);
