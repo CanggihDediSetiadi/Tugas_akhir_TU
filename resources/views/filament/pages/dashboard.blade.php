@@ -111,7 +111,7 @@
         @if(\App\Support\RoleAccess::isTeacher())
         @php
             $teacherDisposisi = \App\Models\Disposisi::with('suratMasuk')
-                ->whereIn('diteruskan_ke', \App\Support\RoleAccess::teacherDisposisiRecipients())
+                ->forRecipients(\App\Support\RoleAccess::teacherDisposisiRecipients())
                 ->latest()
                 ->get();
             $pendingGuru = $teacherDisposisi->where('status', 'pending')->count();
@@ -413,5 +413,4 @@
     </script>
 
 </x-filament-panels::page>
-
 

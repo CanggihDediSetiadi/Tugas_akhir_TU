@@ -226,7 +226,7 @@
             <div class="sm-filter-bar">
                 <div class="sm-search-wrap">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-                    <input class="sm-search" id="smSearch" placeholder="Cari nomor surat, asal, perihal..." type="search" onkeyup="smFilterTable()"/>
+                    <input class="sm-search" id="smSearch" placeholder="Cari no. urut, nomor surat, asal, perihal..." type="search" onkeyup="smFilterTable()"/>
                 </div>
                 <select class="sm-select" id="smStatusFilter" onchange="smFilterTable()">
                     <option value="">Semua Status</option>
@@ -247,12 +247,17 @@
                 <table class="sm-table" id="smTable">
                     <thead>
                         <tr>
+                            <th>No. Urut Masuk</th>
+                            <th>Tgl Surat</th>
                             <th>No. Surat</th>
                             <th>Asal Surat</th>
+                            <th>Tanggal Surat Masuk</th>
+                            <th>Tgl Disposisi</th>
                             <th>Perihal</th>
-                            <th>Tanggal Terima</th>
+                            <th>Diteruskan Ke</th>
                             <th class="center">Klasifikasi</th>
                             <th class="center">Status</th>
+                            <th>Keterangan</th>
                             <th class="right" style="padding-right:20px;">Aksi</th>
                         </tr>
                     </thead>
@@ -278,18 +283,27 @@
                             };
                         @endphp
                         <tr data-status="{{ $surat->status }}" data-klasifikasi="{{ $surat->klasifikasi ?? 'Biasa' }}">
+                            <td style="font-weight:700;white-space:nowrap;">{{ $surat->no_urut_masuk ?? '-' }}</td>
+                            <td style="white-space:nowrap;color:#424754;font-size:13px;">
+                                {{ $surat->tanggal_surat ? $surat->tanggal_surat->format('d M Y') : '-' }}
+                            </td>
                             <td>
                                 <span style="font-family:monospace;font-size:12px;color:#545f73;white-space:nowrap;">
                                     {{ $surat->nomor_surat }}
                                 </span>
                             </td>
                             <td style="font-weight:700;max-width:160px;">{{ Str::limit($surat->asal_surat, 30) }}</td>
-                            <td style="color:#424754;max-width:240px;">{{ Str::limit($surat->perihal, 45) }}</td>
                             <td style="white-space:nowrap;color:#424754;font-size:13px;">
-                                {{ $surat->tanggal_terima ? \Carbon\Carbon::parse($surat->tanggal_terima)->format('d M Y') : '-' }}
+                                {{ $surat->tanggal_terima ? $surat->tanggal_terima->format('d M Y') : '-' }}
                             </td>
+                            <td style="white-space:nowrap;color:#424754;font-size:13px;">
+                                {{ $surat->tanggal_disposisi ? $surat->tanggal_disposisi->format('d M Y') : '-' }}
+                            </td>
+                            <td style="color:#424754;max-width:240px;">{{ Str::limit($surat->perihal, 45) }}</td>
+                            <td style="color:#424754;max-width:180px;">{{ Str::limit($surat->diteruskan_ke ?: '-', 35) }}</td>
                             <td class="center"><span class="sm-badge {{ $klasClass }}">{{ $surat->klasifikasi ?? 'Biasa' }}</span></td>
                             <td class="center"><span class="sm-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
+                            <td style="color:#545f73;max-width:220px;">{{ Str::limit($surat->keterangan ?: '-', 45) }}</td>
                             <td class="right" style="padding-right:16px;">
                                 <div style="display:inline-flex;gap:4px;">
                                     <button class="sm-act-btn" title="Lihat Detail" wire:click="lihatDetail({{ $surat->id }})">
@@ -308,7 +322,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7">
+                            <td colspan="12">
                                 <div class="sm-empty">
                                     <svg width="60" height="60" fill="none" stroke="#9ca3af" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859M2.25 9V6a2.25 2.25 0 012.25-2.25h15A2.25 2.25 0 0121.75 6v3M2.25 9h19.5"/></svg>
                                     <p>Belum ada surat masuk</p>
@@ -337,7 +351,7 @@
     {{-- ── Modal Tambah Surat Masuk ── --}}
     @if($showModalTambah)
     <div style="display:flex;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px;" wire:click.self="$set('showModalTambah', false)">
-        <div style="background:#fff;border-radius:16px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;" wire:click.stop>
+        <div style="background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:calc(100vh - 40px);box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:auto;" wire:click.stop>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #ecedf7;">
                 <div>
                     <p style="font-size:1.05rem;font-weight:800;color:#191b23;">Tambah Surat Masuk</p>
@@ -355,11 +369,19 @@
                 @endif
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
                     <div>
-                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">No. Surat <span style="color:#dc2626;">*</span></label>
-                        <input wire:model="nomor_surat" placeholder="cth. 421.3/089/SMAN4/2024" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">No. Urut Masuk <span style="color:#dc2626;">*</span></label>
+                        <input wire:model="no_urut_masuk" placeholder="cth. 001" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
                     </div>
                     <div>
-                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tanggal Terima <span style="color:#dc2626;">*</span></label>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tgl Surat <span style="color:#dc2626;">*</span></label>
+                        <input wire:model="tanggal_surat" type="date" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">No. Surat <span style="color:#dc2626;">*</span></label>
+                        <input wire:model="nomor_surat" placeholder="cth. 421.3/089/SMAN4/2026" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tanggal Surat Masuk <span style="color:#dc2626;">*</span></label>
                         <input wire:model="tanggal_terima" type="date" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
                     </div>
                 </div>
@@ -368,8 +390,16 @@
                     <input wire:model="asal_surat" placeholder="cth. Dinas Pendidikan Provinsi Jawa Timur" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
                 </div>
                 <div>
+                    <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tgl Disposisi</label>
+                    <input wire:model="tanggal_disposisi" type="date" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
+                </div>
+                <div>
                     <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Perihal <span style="color:#dc2626;">*</span></label>
                     <input wire:model="perihal" placeholder="cth. Undangan Rapat Koordinasi Kurikulum" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Diteruskan Ke</label>
+                    <input wire:model="diteruskan_ke" placeholder="cth. Wakasek Kurikulum" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;color:#191b23;outline:none;"/>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
                     <div>
@@ -409,7 +439,7 @@
     {{-- ── Modal Edit Surat Masuk ── --}}
     @if($showModalEdit)
     <div style="display:flex;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:20px;" wire:click.self="$set('showModalEdit', false)">
-        <div style="background:#fff;border-radius:16px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;" wire:click.stop>
+        <div style="background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:calc(100vh - 40px);box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:auto;" wire:click.stop>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #ecedf7;">
                 <div>
                     <p style="font-size:1.05rem;font-weight:800;color:#191b23;">Edit Surat Masuk</p>
@@ -427,11 +457,19 @@
                 @endif
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
                     <div>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">No. Urut Masuk *</label>
+                        <input wire:model="no_urut_masuk" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
+                    </div>
+                    <div>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tgl Surat *</label>
+                        <input wire:model="tanggal_surat" type="date" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
+                    </div>
+                    <div>
                         <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">No. Surat *</label>
                         <input wire:model="nomor_surat" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
                     </div>
                     <div>
-                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tanggal Terima *</label>
+                        <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tanggal Surat Masuk *</label>
                         <input wire:model="tanggal_terima" type="date" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
                     </div>
                 </div>
@@ -440,8 +478,16 @@
                     <input wire:model="asal_surat" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
                 </div>
                 <div>
+                    <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Tgl Disposisi</label>
+                    <input wire:model="tanggal_disposisi" type="date" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
+                </div>
+                <div>
                     <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Perihal *</label>
                     <input wire:model="perihal" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
+                </div>
+                <div>
+                    <label style="font-size:11px;font-weight:700;color:#424754;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:5px;">Diteruskan Ke</label>
+                    <input wire:model="diteruskan_ke" style="width:100%;padding:9px 12px;border:1px solid #dde0ef;border-radius:8px;font-size:13px;outline:none;"/>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
                     <div>
@@ -489,7 +535,7 @@
                 </button>
             </div>
             <div style="padding:24px;display:flex;flex-direction:column;gap:14px;">
-                @foreach(['nomor_surat'=>'No. Surat','tanggal_terima'=>'Tanggal Terima','asal_surat'=>'Asal Surat','perihal'=>'Perihal','klasifikasi'=>'Klasifikasi','status'=>'Status','keterangan'=>'Keterangan','dibuat'=>'Dicatat Pada'] as $key=>$label)
+                @foreach(['no_urut_masuk'=>'No. Urut Masuk','tanggal_surat'=>'Tgl Surat','nomor_surat'=>'No. Surat','asal_surat'=>'Asal Surat','tanggal_terima'=>'Tanggal Surat Masuk','tanggal_disposisi'=>'Tgl Disposisi','perihal'=>'Perihal','diteruskan_ke'=>'Diteruskan Ke','klasifikasi'=>'Klasifikasi','status'=>'Status','keterangan'=>'Keterangan','dibuat'=>'Dicatat Pada'] as $key=>$label)
                 <div style="display:flex;gap:12px;align-items:flex-start;">
                     <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#727785;width:130px;flex-shrink:0;padding-top:2px;">{{ $label }}</span>
                     <span style="font-size:13.5px;color:#191b23;font-weight:500;">{{ $detailData[$key] ?? '-' }}</span>
@@ -554,4 +600,3 @@
     </script>
 
 </x-filament-panels::page>
-

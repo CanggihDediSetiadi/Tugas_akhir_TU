@@ -16,46 +16,41 @@ class NotificationController extends Controller
     {
         $user = $request->user();
 
-        $suratMasukBelum = SuratMasuk::where('status', 'belum_disposisi')->count();
-        $suratKeluarMenunggu = SuratKeluar::where('status', 'menunggu_persetujuan')->count();
+        $suratMasukIds = SuratMasuk::query()->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $suratKeluarIds = SuratKeluar::query()->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
 
-        $disposisiQuery = Disposisi::query()->whereIn('status', ['pending', 'diproses']);
+        $disposisiQuery = Disposisi::query();
 
         if (RoleAccess::isTeacher($user)) {
-            $disposisiQuery->whereIn('diteruskan_ke', RoleAccess::teacherDisposisiRecipients($user));
+            $disposisiQuery->forRecipients(RoleAccess::teacherDisposisiRecipients($user));
         }
 
-        $disposisiAktif = $disposisiQuery->count();
-        $total = $suratMasukBelum + $disposisiAktif + $suratKeluarMenunggu;
+        $disposisiIds = $disposisiQuery->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
 
         return response()->json([
-            'total' => $total,
             'items' => [
                 [
                     'key' => 'surat_masuk',
-                    'label' => 'Surat masuk perlu disposisi',
-                    'count' => $suratMasukBelum,
-                    'description' => "{$suratMasukBelum} surat masuk belum dibuatkan disposisi.",
+                    'label' => 'Surat masuk baru',
+                    'ids' => $suratMasukIds,
+                    'latest_id' => max($suratMasukIds ?: [0]),
                     'module' => 'Surat Masuk',
-                    'active' => $suratMasukBelum > 0,
                 ],
                 [
                     'key' => 'disposisi',
-                    'label' => 'Disposisi masih aktif',
-                    'count' => $disposisiAktif,
-                    'description' => "{$disposisiAktif} disposisi masih pending atau sedang diproses.",
+                    'label' => 'Disposisi baru',
+                    'ids' => $disposisiIds,
+                    'latest_id' => max($disposisiIds ?: [0]),
                     'module' => 'Disposisi',
-                    'active' => $disposisiAktif > 0,
                 ],
                 [
                     'key' => 'surat_keluar',
-                    'label' => 'Surat keluar menunggu persetujuan',
-                    'count' => $suratKeluarMenunggu,
-                    'description' => "{$suratKeluarMenunggu} surat keluar perlu dicek sebelum dikirim.",
+                    'label' => 'Surat keluar baru',
+                    'ids' => $suratKeluarIds,
+                    'latest_id' => max($suratKeluarIds ?: [0]),
                     'module' => 'Surat Keluar',
-                    'active' => $suratKeluarMenunggu > 0,
                 ],
             ],
-        ]);
+        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 }

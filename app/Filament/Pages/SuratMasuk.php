@@ -30,10 +30,14 @@ class SuratMasuk extends Page
     public bool $showModalDetail = false;
     public bool $showModalHapus = false;
 
+    public string $no_urut_masuk = '';
+    public string $tanggal_surat = '';
     public string $nomor_surat = '';
     public string $tanggal_terima = '';
     public string $asal_surat = '';
+    public string $tanggal_disposisi = '';
     public string $perihal = '';
+    public string $diteruskan_ke = '';
     public string $klasifikasi = 'Biasa';
     public string $status = 'belum_disposisi';
     public string $keterangan = '';
@@ -62,10 +66,14 @@ class SuratMasuk extends Page
     {
         $surat = SuratMasukModel::findOrFail($id);
         $this->editId = $id;
+        $this->no_urut_masuk = $surat->no_urut_masuk ?? '';
+        $this->tanggal_surat = $surat->tanggal_surat?->format('Y-m-d') ?? '';
         $this->nomor_surat = $surat->nomor_surat;
         $this->tanggal_terima = $surat->tanggal_terima?->format('Y-m-d') ?? '';
         $this->asal_surat = $surat->asal_surat;
+        $this->tanggal_disposisi = $surat->tanggal_disposisi?->format('Y-m-d') ?? '';
         $this->perihal = $surat->perihal;
+        $this->diteruskan_ke = $surat->diteruskan_ke ?? '';
         $this->klasifikasi = $surat->klasifikasi ?? 'Biasa';
         $this->status = $surat->status;
         $this->keterangan = $surat->keterangan ?? '';
@@ -91,10 +99,14 @@ class SuratMasuk extends Page
         $lampiran = collect($surat->lampiran ?? [])->map(fn ($file) => ($file['name'] ?? 'Lampiran') . ' (' . ($file['path'] ?? '-') . ')')->implode(', ');
         $this->detailData = [
             'id' => $surat->id,
+            'no_urut_masuk' => $surat->no_urut_masuk ?? '-',
+            'tanggal_surat' => $surat->tanggal_surat?->format('d M Y') ?? '-',
             'nomor_surat' => $surat->nomor_surat,
-            'tanggal_terima' => $surat->tanggal_terima?->format('d M Y'),
+            'tanggal_terima' => $surat->tanggal_terima?->format('d M Y') ?? '-',
             'asal_surat' => $surat->asal_surat,
+            'tanggal_disposisi' => $surat->tanggal_disposisi?->format('d M Y') ?? '-',
             'perihal' => $surat->perihal,
+            'diteruskan_ke' => $surat->diteruskan_ke ?: '-',
             'klasifikasi' => $surat->klasifikasi ?? 'Biasa',
             'status' => $surat->status_label,
             'keterangan' => $surat->keterangan ?? '-',
@@ -126,10 +138,14 @@ class SuratMasuk extends Page
     private function rules(): array
     {
         return [
+            'no_urut_masuk' => 'required|string|max:50',
+            'tanggal_surat' => 'required|date',
             'nomor_surat' => 'required|string|max:100',
             'tanggal_terima' => 'required|date',
             'asal_surat' => 'required|string|max:255',
+            'tanggal_disposisi' => 'nullable|date|after_or_equal:tanggal_terima',
             'perihal' => 'required|string|max:255',
+            'diteruskan_ke' => 'nullable|string|max:255',
             'lampiranFiles.*' => 'nullable|file|max:10240',
         ];
     }
@@ -137,9 +153,12 @@ class SuratMasuk extends Page
     private function messages(): array
     {
         return [
+            'no_urut_masuk.required' => 'No. urut masuk wajib diisi.',
+            'tanggal_surat.required' => 'Tanggal surat wajib diisi.',
             'nomor_surat.required' => 'Nomor surat wajib diisi.',
-            'tanggal_terima.required' => 'Tanggal terima wajib diisi.',
+            'tanggal_terima.required' => 'Tanggal surat masuk wajib diisi.',
             'asal_surat.required' => 'Asal surat wajib diisi.',
+            'tanggal_disposisi.after_or_equal' => 'Tanggal disposisi tidak boleh sebelum tanggal surat masuk.',
             'perihal.required' => 'Perihal wajib diisi.',
             'lampiranFiles.*.max' => 'Lampiran maksimal 10 MB per file.',
         ];
@@ -148,10 +167,14 @@ class SuratMasuk extends Page
     private function payload(array $existingLampiran = []): array
     {
         return [
+            'no_urut_masuk' => $this->no_urut_masuk,
+            'tanggal_surat' => $this->tanggal_surat,
             'nomor_surat' => $this->nomor_surat,
             'tanggal_terima' => $this->tanggal_terima,
             'asal_surat' => $this->asal_surat,
+            'tanggal_disposisi' => $this->tanggal_disposisi ?: null,
             'perihal' => $this->perihal,
+            'diteruskan_ke' => $this->diteruskan_ke ?: null,
             'klasifikasi' => $this->klasifikasi,
             'status' => $this->status,
             'keterangan' => $this->keterangan,
@@ -178,10 +201,14 @@ class SuratMasuk extends Page
 
     private function resetForm(): void
     {
+        $this->no_urut_masuk = '';
+        $this->tanggal_surat = '';
         $this->nomor_surat = '';
         $this->tanggal_terima = '';
         $this->asal_surat = '';
+        $this->tanggal_disposisi = '';
         $this->perihal = '';
+        $this->diteruskan_ke = '';
         $this->klasifikasi = 'Biasa';
         $this->status = 'belum_disposisi';
         $this->keterangan = '';

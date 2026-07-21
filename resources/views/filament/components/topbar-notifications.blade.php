@@ -5,12 +5,39 @@
         loading: true,
         total: 0,
         items: [],
+        rawItems: [],
+        dismissedMarkers: {},
+        poller: null,
+        storageKey: 'siatu-notifications-read-v1-' + @js(auth()->id()),
         endpoint: @js(route('api.notifications')),
+        loadDismissed() {
+            try {
+                this.dismissedMarkers = JSON.parse(localStorage.getItem(this.storageKey) || '{}')
+            } catch (error) {
+                this.dismissedMarkers = {}
+            }
+        },
+        applyNotifications() {
+            this.items = this.rawItems.map(item => {
+                const marker = Number(this.dismissedMarkers[item.key] || 0)
+                const count = (item.ids || []).filter(id => Number(id) > marker).length
+
+                return {
+                    ...item,
+                    count,
+                    active: count > 0,
+                    description: this.descriptionFor(item.key, count),
+                }
+            }).filter(item => item.count > 0)
+
+            this.total = this.items.reduce((sum, item) => sum + item.count, 0)
+        },
         async load() {
             this.loading = true
 
             try {
                 const response = await fetch(this.endpoint, {
+                    cache: 'no-store',
                     headers: {
                         Accept: 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
@@ -23,8 +50,8 @@
                 }
 
                 const data = await response.json()
-                this.total = data.total ?? 0
-                this.items = data.items ?? []
+                this.rawItems = data.items ?? []
+                this.applyNotifications()
             } catch (error) {
                 this.total = 0
                 this.items = []
@@ -36,9 +63,29 @@
             return this.total > 99 ? '99+' : this.total
         },
         clearNotifications() {
-            this.total = 0
-            this.items = []
+            const markers = { ...this.dismissedMarkers }
+
+            this.rawItems.forEach(item => {
+                markers[item.key] = Math.max(
+                    Number(markers[item.key] || 0),
+                    Number(item.latest_id || 0),
+                )
+            })
+
+            this.dismissedMarkers = markers
+            try {
+                localStorage.setItem(this.storageKey, JSON.stringify(markers))
+            } catch (error) {}
+
+            this.applyNotifications()
             this.loading = false
+        },
+        descriptionFor(key, count) {
+            return {
+                surat_masuk: `${count} surat masuk baru telah dicatat.`,
+                disposisi: `${count} disposisi baru telah dibuat.`,
+                surat_keluar: `${count} surat keluar baru telah dicatat.`,
+            }[key] ?? `${count} notifikasi baru.`
         },
         iconText(key) {
             return {
@@ -48,7 +95,7 @@
             }[key] ?? 'NT'
         },
     }"
-    x-init="load()"
+    x-init="loadDismissed(); load(); poller = setInterval(() => load(), 30000); $cleanup(() => clearInterval(poller))"
     x-on:keydown.escape.window="open = false"
 >
     <style>
@@ -93,15 +140,15 @@
     <div class="tu-notif-panel" x-cloak x-show="open" x-transition.origin.top.right x-on:click.outside="open = false">
         <div class="tu-notif-head">
             <div class="tu-notif-title">
-                Notifications
+                Notifikasi
                 <span class="tu-notif-title-badge" x-cloak x-show="total > 0" x-text="badgeText()"></span>
             </div>
             <div class="tu-notif-actions">
                 <button type="button" class="tu-notif-action refresh" x-on:click="load()">
                     Refresh
                 </button>
-                <button type="button" class="tu-notif-action delete" x-on:click="clearNotifications()">
-                    Hapus
+                <button type="button" class="tu-notif-action delete" x-on:click="clearNotifications()" x-show="total > 0">
+                    Tandai dibaca
                 </button>
             </div>
         </div>
