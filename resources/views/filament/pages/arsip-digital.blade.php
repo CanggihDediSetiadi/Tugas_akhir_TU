@@ -222,7 +222,7 @@
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
                     Buat Folder
                 </button>
-                <button class="ad-btn-pri" onclick="document.getElementById('modalUnggah').style.display='flex'">
+                <button type="button" class="ad-btn-pri" wire:click="bukaModalUnggah">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                     Unggah Dokumen
                 </button>
@@ -232,15 +232,30 @@
         {{-- â”€â”€ Stat Cards â”€â”€ --}}
         @php
             try {
-                $arsipList  = \App\Models\ArsipDigital::orderBy('created_at','desc')->get();
+                $allArsip = \App\Models\ArsipDigital::orderBy('created_at','desc')->get();
             } catch (\Exception $e) {
-                $arsipList  = collect();
+                $allArsip = collect();
             }
-            $totalDok   = $arsipList->where('tipe','file')->count();
-            $totalFolder= $arsipList->where('tipe','folder')->count();
-            $tervalidasi= $arsipList->where('status','tervalidasi')->count();
-            $draft      = $arsipList->where('status','draft')->count();
-            $totalBytes = $arsipList->sum('ukuran_bytes');
+            $currentFolder = $this->currentFolderId
+                ? $allArsip->firstWhere('id', $this->currentFolderId)
+                : null;
+            $arsipList = $allArsip
+                ->where('parent_id', $this->currentFolderId)
+                ->sortByDesc('created_at')
+                ->values();
+            $breadcrumbs = collect();
+            $breadcrumbFolder = $currentFolder;
+            while ($breadcrumbFolder) {
+                $breadcrumbs->prepend($breadcrumbFolder);
+                $breadcrumbFolder = $breadcrumbFolder->parent_id
+                    ? $allArsip->firstWhere('id', $breadcrumbFolder->parent_id)
+                    : null;
+            }
+            $totalDok   = $allArsip->where('tipe','file')->count();
+            $totalFolder= $allArsip->where('tipe','folder')->count();
+            $tervalidasi= $allArsip->where('status','tervalidasi')->count();
+            $draft      = $allArsip->where('status','draft')->count();
+            $totalBytes = $allArsip->sum('ukuran_bytes');
             // Format total storage
             $storageLabel = $totalBytes < 1024*1024*1024
                 ? round($totalBytes/(1024*1024),1).' MB'
@@ -346,11 +361,25 @@
             <nav class="ad-breadcrumb">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-                <a href="#">Arsip Digital</a>
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-                <span style="color:#191b23;font-weight:700;">Semua Dokumen</span>
+                <a href="#" wire:click.prevent="bukaRoot">Arsip Digital</a>
+                @forelse($breadcrumbs as $folder)
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    @if($loop->last)
+                        <span style="color:#191b23;font-weight:700;">{{ $folder->nama_dokumen }}</span>
+                    @else
+                        <a href="#" wire:click.prevent="bukaFolder({{ $folder->id }})">{{ $folder->nama_dokumen }}</a>
+                    @endif
+                @empty
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    <span style="color:#191b23;font-weight:700;">Semua Dokumen</span>
+                @endforelse
             </nav>
             <div style="display:flex;align-items:center;gap:12px;">
+                @if($currentFolder)
+                <button type="button" class="ad-btn-out" wire:click="bukaParent">
+                    Kembali
+                </button>
+                @endif
                 <span id="adItemCount" style="font-size:12px;color:#727785;font-weight:600;">
                     Menampilkan <strong>{{ $arsipList->count() }}</strong> item
                 </span>
@@ -382,6 +411,7 @@
                     $stClass = $item->status === 'tervalidasi' ? 'badge-tervalidasi' : 'badge-draft';
                 @endphp
                 <div class="ad-item"
+                    @if($isFolder) wire:click="bukaFolder({{ $item->id }})" title="Buka folder {{ $item->nama_dokumen }}" @endif
                     data-nama="{{ strtolower($item->nama_dokumen) }}"
                     data-kategori="{{ $item->kategori }}"
                     data-tahun="{{ $item->tahun }}"
@@ -418,11 +448,11 @@
                     </div>
                     <p class="ad-item-name" title="{{ $item->nama_dokumen }}">{{ $item->nama_dokumen }}</p>
                     <p class="ad-item-meta">
-                        {{ $item->kategori }}
+                        @if(!$isFolder) {{ $item->kategori }} @endif
                         @if(!$isFolder && $item->ukuran_bytes > 0)
-                        â€¢ {{ $item->ukuran_format }}
+                        &bull; {{ $item->ukuran_format }}
                         @elseif($isFolder)
-                        â€¢ {{ $item->children()->count() }} item
+                        {{ $item->children()->count() }} item
                         @endif
                     </p>
                     <div class="ad-item-footer">
@@ -455,8 +485,8 @@
         <div id="adListView" style="display:none;">
             <div class="ad-list-card">
                 <div class="ad-list-head">
-                    <p style="font-size:.95rem;font-weight:700;color:#191b23;">Semua Dokumen</p>
-                    <p style="font-size:.82rem;color:#424754;margin-top:2px;">Daftar seluruh arsip digital SMAN 4 Surabaya</p>
+                    <p style="font-size:.95rem;font-weight:700;color:#191b23;">{{ $currentFolder ? $currentFolder->nama_dokumen : 'Semua Dokumen' }}</p>
+                    <p style="font-size:.82rem;color:#424754;margin-top:2px;">{{ $currentFolder ? 'Isi folder arsip yang sedang dibuka.' : 'Daftar seluruh arsip digital SMAN 4 Surabaya' }}</p>
                 </div>
                 <div style="overflow-x:auto;">
                     <table class="ad-table" id="adListTable">
@@ -485,6 +515,7 @@
                                 $stClass = $item->status === 'tervalidasi' ? 'badge-tervalidasi' : 'badge-draft';
                             @endphp
                             <tr data-nama="{{ strtolower($item->nama_dokumen) }}"
+                                @if($isFolder) wire:click="bukaFolder({{ $item->id }})" title="Buka folder {{ $item->nama_dokumen }}" @endif
                                 data-kategori="{{ $item->kategori }}"
                                 data-tahun="{{ $item->tahun }}"
                                 data-status="{{ $item->status }}">
@@ -507,7 +538,7 @@
                                 <td style="font-size:13px;color:#424754;">{{ $item->ukuran_format }}</td>
                                 <td style="font-size:13px;color:#424754;">{{ $item->tahun ?? '-' }}</td>
                                 <td class="right" style="padding-right:16px;">
-                                    <div style="display:inline-flex;gap:4px;">
+                                    <div style="display:inline-flex;gap:4px;" onclick="event.stopPropagation()">
                                         <button class="ad-act-btn" title="Lihat Detail">
                                             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                         </button>
@@ -628,14 +659,16 @@
     {{-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
          Modal: Unggah Dokumen
     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• --}}
-    <div id="modalUnggah" class="ad-modal-overlay">
+    <div id="modalUnggah" class="ad-modal-overlay" style="{{ $modalUnggahTerbuka ? 'display:flex;' : '' }}" wire:click.self="tutupModalUnggah">
         <div class="ad-modal-box">
             <div class="ad-modal-head">
                 <div>
                     <p class="ad-modal-title">Unggah Dokumen Baru</p>
-                    <p class="ad-modal-sub">Tambahkan dokumen ke arsip digital SMAN 4 Surabaya.</p>
+                    <p class="ad-modal-sub">
+                        Tambahkan dokumen ke {{ $currentFolder ? 'folder '.$currentFolder->nama_dokumen : 'arsip digital SMAN 4 Surabaya' }}.
+                    </p>
                 </div>
-                <button class="ad-modal-close" onclick="document.getElementById('modalUnggah').style.display='none'">
+                <button type="button" class="ad-modal-close" wire:click="tutupModalUnggah">
                     <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -687,7 +720,7 @@
                     <textarea class="ad-field-input" wire:model="keterangan" rows="2" placeholder="Catatan tambahan (opsional)..." style="resize:vertical;font-family:inherit;"></textarea>
                 </div>
                 <div class="ad-modal-footer">
-                    <button type="button" class="ad-btn-out" onclick="document.getElementById('modalUnggah').style.display='none'">Batal</button>
+                    <button type="button" class="ad-btn-out" wire:click="tutupModalUnggah">Batal</button>
                     <button type="submit" class="ad-btn-pri">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
                         Unggah Dokumen
@@ -705,7 +738,9 @@
             <div class="ad-modal-head">
                 <div>
                     <p class="ad-modal-title">Buat Folder Baru</p>
-                    <p class="ad-modal-sub">Organisir arsip ke dalam folder yang mudah ditemukan.</p>
+                    <p class="ad-modal-sub">
+                        {{ $currentFolder ? 'Buat subfolder di dalam '.$currentFolder->nama_dokumen.'.' : 'Organisir arsip ke dalam folder yang mudah ditemukan.' }}
+                    </p>
                 </div>
                 <button class="ad-modal-close" onclick="document.getElementById('modalBuatFolder').style.display='none'">
                     <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -875,5 +910,3 @@
     </script>
 
 </x-filament-panels::page>
-
-

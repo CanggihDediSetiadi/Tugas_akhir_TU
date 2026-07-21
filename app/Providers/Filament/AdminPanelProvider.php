@@ -51,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::SIDEBAR_FOOTER,
                 fn () => view('filament.components.sidebar-footer'),
             )
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_AFTER,
+                fn () => view('filament.components.topbar-notifications'),
+            )
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('MENU UTAMA')
@@ -149,5 +153,4 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 }
-
 

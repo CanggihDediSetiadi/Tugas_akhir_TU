@@ -6,6 +6,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/api/notifications', [\App\Http\Controllers\Api\NotificationController::class, 'index'])
+    ->middleware('auth')
+    ->name('api.notifications');
+
 Route::get('/admin/cetak-rekap/download', function (\Illuminate\Http\Request $request) {
     abort_unless(\App\Support\RoleAccess::canPrintReports(), 403);
 
@@ -53,4 +57,3 @@ Route::get('/admin/arsip-digital/{arsip}/download', function (\App\Models\ArsipD
     abort_unless($arsip->path_file, 404);
     return \Illuminate\Support\Facades\Storage::disk('public')->download($arsip->path_file, $arsip->nama_dokumen . ($arsip->format ? '.' . $arsip->format : ''));
 })->middleware('auth')->name('arsip.download');
-
