@@ -36,6 +36,19 @@ class ArsipDigital extends Page
     public ?int $currentFolderId = null;
     public bool $modalUnggahTerbuka = false;
 
+    // Edit modal
+    public bool  $modalEditTerbuka = false;
+    public ?int  $editId = null;
+    public string $editNama = '';
+    public string $editKategori = 'Umum';
+    public string $editKlasifikasi = 'Biasa';
+    public string $editKeterangan = '';
+
+    // Delete confirm
+    public bool   $modalHapusTerbuka = false;
+    public ?int   $hapusId = null;
+    public string $hapusNama = '';
+
     public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable { return ''; }
     public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable { return ''; }
 
@@ -154,6 +167,23 @@ class ArsipDigital extends Page
     public function hapusArsip(int $id): void
     {
         $arsip = ArsipDigitalModel::findOrFail($id);
+        $this->hapusId   = $arsip->id;
+        $this->hapusNama = $arsip->nama_dokumen;
+        $this->modalHapusTerbuka = true;
+    }
+
+    public function batalHapus(): void
+    {
+        $this->modalHapusTerbuka = false;
+        $this->hapusId   = null;
+        $this->hapusNama = '';
+    }
+
+    public function eksekusiHapus(): void
+    {
+        if (! $this->hapusId) return;
+
+        $arsip = ArsipDigitalModel::findOrFail($this->hapusId);
         if ($arsip->tipe === 'folder') {
             $this->hapusChildren($arsip);
         }
@@ -166,8 +196,54 @@ class ArsipDigital extends Page
             $this->currentFolderId = $arsip->parent_id;
         }
 
+        $nama = $this->hapusNama;
         $arsip->delete();
-        session()->flash('sukses', 'Arsip berhasil dihapus.');
+
+        $this->modalHapusTerbuka = false;
+        $this->hapusId   = null;
+        $this->hapusNama = '';
+
+        $this->dispatch('arsip-deleted', nama: $nama);
+    }
+
+    public function editArsip(int $id): void
+    {
+        $arsip = ArsipDigitalModel::findOrFail($id);
+        $this->editId          = $arsip->id;
+        $this->editNama        = $arsip->nama_dokumen;
+        $this->editKategori    = $arsip->kategori ?? 'Umum';
+        $this->editKlasifikasi = $arsip->klasifikasi ?? 'Biasa';
+        $this->editKeterangan  = $arsip->keterangan ?? '';
+        $this->modalEditTerbuka = true;
+    }
+
+    public function simpanEdit(): void
+    {
+        $this->validate([
+            'editNama'        => 'required|string|max:255',
+            'editKategori'    => 'required|string|max:100',
+            'editKlasifikasi' => 'required|string|max:100',
+            'editKeterangan'  => 'nullable|string|max:2000',
+        ], [
+            'editNama.required' => 'Nama dokumen wajib diisi.',
+        ]);
+
+        ArsipDigitalModel::findOrFail($this->editId)->update([
+            'nama_dokumen' => $this->editNama,
+            'kategori'     => $this->editKategori,
+            'klasifikasi'  => $this->editKlasifikasi,
+            'keterangan'   => $this->editKeterangan,
+        ]);
+
+        $this->modalEditTerbuka = false;
+        $this->editId = null;
+        session()->flash('sukses', 'Arsip berhasil diperbarui.');
+    }
+
+    public function tutupModalEdit(): void
+    {
+        $this->modalEditTerbuka = false;
+        $this->editId = null;
     }
 
     private function resetForm(): void

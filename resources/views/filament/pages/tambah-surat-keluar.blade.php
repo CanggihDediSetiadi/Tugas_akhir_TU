@@ -4,8 +4,7 @@
 
     <style>
         /* ── Layout & Base ── */
-        .tsk-wrap { display:grid; grid-template-columns:1fr 380px; gap:28px; align-items:start; margin-top:-4px; }
-        @media(max-width:1100px){ .tsk-wrap { grid-template-columns:1fr; } .tsk-sidebar { order:0; } .tsk-main { order:1; } }
+        .tsk-wrap { display:grid; grid-template-columns:1fr; gap:28px; align-items:start; margin-top:-4px; }
 
         /* ── Hero Header ── */
         .tsk-hero-title { font-size:2rem;font-weight:800;line-height:1.15;letter-spacing:-0.02em;color:#191b23; }
@@ -230,33 +229,33 @@
                 </div>
                 <div class="tsk-grid-2">
                     <div class="tsk-field">
-                        <label class="tsk-label">Nomor Surat (Otomatis)</label>
-                        <input class="tsk-input mono" type="text" value="{{ $this->nomor_surat }}" disabled/>
+                        <label class="tsk-label">No. Urut <span style="color:#dc2626;">*</span></label>
+                        <input class="tsk-input mono" type="text" wire:model="nomor_surat" id="tskNoUrut"
+                               placeholder="Contoh: 001/SK/TU/VII/2026"/>
+                        @error('nomor_surat')<span class="tsk-err">{{ $message }}</span>@enderror
+                    </div>
+                    <div class="tsk-field">
+                        <label class="tsk-label">No. Berkas</label>
+                        <input class="tsk-input" type="text" wire:model="no_berkas" id="tskNoBerkas"
+                               placeholder="Contoh: BRK/2026/001"/>
+                        @error('no_berkas')<span class="tsk-err">{{ $message }}</span>@enderror
                     </div>
                     <div class="tsk-field">
                         <label class="tsk-label">Tanggal Surat <span style="color:#dc2626;">*</span></label>
                         <input class="tsk-input" type="date" wire:model="tanggal_surat" id="tskTanggal"/>
                         @error('tanggal_surat')<span class="tsk-err">{{ $message }}</span>@enderror
                     </div>
-                    <div class="tsk-field tsk-col-2">
-                        <label class="tsk-label">Tujuan Surat <span style="color:#dc2626;">*</span></label>
-                        <input class="tsk-input" type="text" wire:model="tujuan" id="tskTujuan"
-                               placeholder="Contoh: Kepala Dinas Pendidikan Provinsi Jawa Barat"/>
-                        @error('tujuan')<span class="tsk-err">{{ $message }}</span>@enderror
-                    </div>
-                    <div class="tsk-field tsk-col-2">
+                    <div class="tsk-field">
                         <label class="tsk-label">Perihal <span style="color:#dc2626;">*</span></label>
                         <input class="tsk-input" type="text" wire:model="perihal" id="tskPerihal"
                                placeholder="Masukkan perihal surat secara singkat dan jelas"/>
                         @error('perihal')<span class="tsk-err">{{ $message }}</span>@enderror
                     </div>
-                    <div class="tsk-field">
-                        <label class="tsk-label">Kategori Surat</label>
-                        <select class="tsk-select" wire:model="kategori">
-                            <option value="Biasa">Biasa</option>
-                            <option value="Penting">Penting</option>
-                            <option value="Sangat Penting">Sangat Penting</option>
-                        </select>
+                    <div class="tsk-field tsk-col-2">
+                        <label class="tsk-label">Alamat Tujuan <span style="color:#dc2626;">*</span></label>
+                        <input class="tsk-input" type="text" wire:model="alamat_tujuan" id="tskAlamatTujuan"
+                               placeholder="Contoh: Kepala Dinas Pendidikan Provinsi Jawa Timur, Jl. ..."/>
+                        @error('alamat_tujuan')<span class="tsk-err">{{ $message }}</span>@enderror
                     </div>
                 </div>
             </div>
@@ -267,13 +266,13 @@
                     <div class="tsk-card-head-icon">
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125"/></svg>
                     </div>
-                    <h3>Isi Surat</h3>
+                    <h3>Keterangan</h3>
                 </div>
 
-                @error('isi_surat')<div class="tsk-alert show" style="margin-bottom:12px;">
+                @error('keterangan')<div class="tsk-alert show" style="margin-bottom:12px;">
                     <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>
                     <span>{{ $message }}</span>
-                </div>@enderror
+                    </div>@enderror
 
                 {{-- Toolbar --}}
                 <div class="tsk-toolbar">
@@ -307,9 +306,6 @@
                     <button class="tsk-toolbar-btn" type="button" onclick="execCmd('justifyFull')" title="Justify">
                         <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M3 6h18M3 10h18M3 14h18M3 18h18"/></svg>
                     </button>
-                    <button class="tsk-toolbar-btn" type="button" style="margin-left:auto;" title="Isi Template">
-                        <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M9 12h6M9 15h3M21 7v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h4l2-2h2l2 2h4a2 2 0 012 2z"/></svg>
-                    </button>
                 </div>
 
                 {{-- Editor --}}
@@ -317,12 +313,9 @@
                     <div class="tsk-editor" id="tskEditor" contenteditable="true"
                          oninput="syncEditor()"
                          onblur="syncEditor()">
-                        <p>Dengan hormat,</p>
-                        <p><br/></p>
-                        <p>Melalui surat ini kami bermaksud untuk menyampaikan...</p>
                     </div>
                     {{-- Hidden textarea for Livewire --}}
-                    <textarea wire:model="isi_surat" id="tskIsiSurat" style="display:none;"></textarea>
+                    <textarea wire:model="keterangan" id="tskIsiSurat" style="display:none;"></textarea>
                 </div>
                 <div class="tsk-editor-footer">
                     <span id="tskWordCount">0 kata</span>
@@ -373,101 +366,7 @@
 
         </div>
 
-        {{-- ───────────── RIGHT: Sidebar ───────────── --}}
-        <div class="tsk-sidebar">
 
-            {{-- Guide Card --}}
-            <div class="tsk-guide-card">
-                <div class="tsk-guide-head">
-                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M12 2a7 7 0 110 14A7 7 0 0112 2zm0 16.5a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z"/></svg>
-                    <h4>Panduan Pengisian</h4>
-                </div>
-                <div class="tsk-guide-item">
-                    <div class="tsk-guide-dot"></div>
-                    <span>Pastikan tujuan surat menyertakan gelar resmi penerima.</span>
-                </div>
-                <div class="tsk-guide-item">
-                    <div class="tsk-guide-dot"></div>
-                    <span>Gunakan format bahasa yang baku dan formal sesuai EYD.</span>
-                </div>
-                <div class="tsk-guide-item">
-                    <div class="tsk-guide-dot"></div>
-                    <span>Ukuran total lampiran tidak boleh melebihi 25 MB.</span>
-                </div>
-                <div class="tsk-guide-item">
-                    <div class="tsk-guide-dot"></div>
-                    <span>Nomor surat dihasilkan otomatis dan tidak dapat diubah.</span>
-                </div>
-            </div>
-
-            {{-- Status Alur --}}
-            <div class="tsk-side-card">
-                <div class="tsk-side-head">Status Alur Surat</div>
-                <div class="tsk-side-body">
-                    <div class="tsk-stepper">
-                        <div class="tsk-step active">
-                            <div class="tsk-step-line"></div>
-                            <div class="tsk-step-dot">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z"/></svg>
-                            </div>
-                            <div>
-                                <p class="tsk-step-label">Penyusunan Draf</p>
-                                <p class="tsk-step-sub">Sedang berlangsung</p>
-                            </div>
-                        </div>
-                        <div class="tsk-step pending">
-                            <div class="tsk-step-line"></div>
-                            <div class="tsk-step-dot">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
-                            </div>
-                            <div>
-                                <p class="tsk-step-label">Verifikasi Kasubag</p>
-                                <p class="tsk-step-sub">Belum dimulai</p>
-                            </div>
-                        </div>
-                        <div class="tsk-step pending">
-                            <div class="tsk-step-line"></div>
-                            <div class="tsk-step-dot">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
-                            </div>
-                            <div>
-                                <p class="tsk-step-label">Tanda Tangan Kepala</p>
-                                <p class="tsk-step-sub">Belum dimulai</p>
-                            </div>
-                        </div>
-                        <div class="tsk-step pending">
-                            <div class="tsk-step-dot">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            </div>
-                            <div>
-                                <p class="tsk-step-label">Registrasi &amp; Kirim</p>
-                                <p class="tsk-step-sub">Belum dimulai</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Templates --}}
-            <div class="tsk-side-card">
-                <div class="tsk-side-head">Template Terakhir Digunakan</div>
-                <div class="tsk-side-body">
-                    <button class="tsk-tpl-btn" onclick="loadTemplate('undangan')">
-                        <span>Surat Undangan Rapat</span>
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-                    </button>
-                    <button class="tsk-tpl-btn" onclick="loadTemplate('edaran')">
-                        <span>Surat Edaran Libur</span>
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-                    </button>
-                    <button class="tsk-tpl-btn" onclick="loadTemplate('kerjasama')">
-                        <span>Surat Permohonan Kerja Sama</span>
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
-                    </button>
-                </div>
-            </div>
-
-        </div>
     </div>
 
     <script>

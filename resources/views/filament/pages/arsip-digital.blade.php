@@ -98,6 +98,25 @@
         .ad-item-icon-wrap { width:48px; height:48px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
         .ad-more-btn { background:none; border:none; cursor:pointer; color:#c2c6d6; padding:4px; border-radius:6px; transition:color .15s, background .15s; }
         .ad-more-btn:hover { color:#0058be; background:#eff6ff; }
+
+        /* ── Dropdown Menu ── */
+        .ad-dropdown { position:relative; display:inline-flex; }
+        .ad-dropdown-menu {
+            display:none; position:absolute; top:calc(100% + 4px); right:0; z-index:9999;
+            background:#fff; border:1px solid #e1e2ec; border-radius:10px;
+            box-shadow:0 8px 24px rgba(0,0,0,.14); min-width:150px; overflow:hidden;
+        }
+        .ad-dropdown-menu.open { display:block; }
+        .ad-dropdown-item {
+            display:flex; align-items:center; gap:9px;
+            padding:10px 14px; font-size:12.5px; font-weight:600; color:#191b23;
+            cursor:pointer; background:none; border:none; width:100%; text-align:left;
+            transition:background .12s;
+        }
+        .ad-dropdown-item:hover { background:#f5f5fe; }
+        .ad-dropdown-item.danger { color:#dc2626; }
+        .ad-dropdown-item.danger:hover { background:#fee2e2; }
+        .ad-dropdown-sep { height:1px; background:#ecedf7; margin:2px 0; }
         .ad-item-name { font-size:.9rem; font-weight:700; color:#191b23; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .ad-item-meta { font-size:11px; color:#727785; margin-bottom:10px; }
         .ad-item-footer { display:flex; align-items:center; justify-content:space-between; }
@@ -199,19 +218,98 @@
             .ad-filter-grid { grid-template-columns:1fr; }
             .ad-grid { grid-template-columns:repeat(2,1fr); }
         }
+
+        /* ── Toast Notification ── */
+        .ad-toast {
+            position:fixed; bottom:28px; right:28px; z-index:99999;
+            display:flex; align-items:center; gap:12px;
+            padding:14px 20px; border-radius:14px; min-width:300px; max-width:400px;
+            background:#0f172a; box-shadow:0 10px 40px rgba(0,0,0,.25);
+            font-size:13.5px; font-weight:600; color:#fff;
+            transform:translateY(90px); opacity:0;
+            transition:transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s ease;
+            pointer-events:none;
+        }
+        .ad-toast.show { transform:translateY(0); opacity:1; pointer-events:auto; }
+        .ad-toast-icon { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .ad-toast.success .ad-toast-icon { background:rgba(74,222,128,.2); color:#4ade80; }
+        .ad-toast.danger  .ad-toast-icon { background:rgba(248,113,113,.2); color:#f87171; }
+        .ad-toast-body { flex:1; }
+        .ad-toast-title { font-size:13.5px; font-weight:700; }
+        .ad-toast-sub { font-size:11.5px; opacity:.65; margin-top:2px; }
+
+        /* ── Modal Konfirmasi Hapus ── */
+        .ad-modal-danger-box {
+            background:#fff; border-radius:20px; width:100%; max-width:420px;
+            box-shadow:0 28px 80px rgba(0,0,0,.2), 0 0 0 1px rgba(0,0,0,.04);
+            overflow:hidden;
+        }
+        .ad-modal-danger-header {
+            background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%);
+            padding:32px 28px 28px; text-align:center; position:relative;
+        }
+        .ad-modal-danger-icon {
+            width:64px; height:64px; background:rgba(255,255,255,.18); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            margin:0 auto 16px; color:#fff;
+            box-shadow:0 0 0 12px rgba(255,255,255,.08);
+        }
+        .ad-modal-danger-title {
+            font-size:1.25rem; font-weight:800; color:#fff; margin:0;
+            text-shadow:0 1px 3px rgba(0,0,0,.2);
+        }
+        .ad-modal-danger-body { padding:24px 28px 28px; text-align:center; }
+        .ad-modal-danger-sub {
+            font-size:13.5px; color:#545f73; line-height:1.65; margin-bottom:16px;
+        }
+        .ad-modal-danger-name-badge {
+            display:inline-flex; align-items:center; gap:7px;
+            background:#fff0f0; border:1.5px solid #fca5a5; color:#dc2626;
+            border-radius:8px; padding:8px 14px;
+            font-size:13.5px; font-weight:700; margin:12px 0;
+            max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        .ad-modal-danger-warn {
+            display:inline-flex; align-items:center; gap:5px;
+            font-size:11.5px; color:#9ca3af; font-weight:500;
+            background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px;
+            padding:5px 12px; margin-top:4px;
+        }
+        .ad-modal-danger-btns { display:flex; gap:10px; margin-top:20px; }
+        .ad-btn-danger {
+            flex:1; padding:11px 16px; background:linear-gradient(135deg,#dc2626,#b91c1c);
+            border:none; border-radius:10px; font-size:13.5px; font-weight:700;
+            color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px;
+            box-shadow:0 4px 12px rgba(220,38,38,.4); transition:all .15s;
+        }
+        .ad-btn-danger:hover { background:linear-gradient(135deg,#b91c1c,#991b1b); transform:translateY(-1px); box-shadow:0 6px 18px rgba(220,38,38,.45); }
+        .ad-btn-danger:active { transform:translateY(0); }
+        .ad-btn-cancel-del {
+            flex:1; padding:11px 16px; background:#fff; border:1.5px solid #e1e2ec;
+            border-radius:10px; font-size:13.5px; font-weight:600;
+            color:#545f73; cursor:pointer; transition:all .15s;
+        }
+        .ad-btn-cancel-del:hover { background:#f5f5fe; border-color:#c2c6d6; }
     </style>
 
     <div style="margin-top:-4px;">
 
-        {{-- â”€â”€ Flash Message â”€â”€ --}}
-        @if(session('sukses'))
-        <div style="display:flex;align-items:center;gap:10px;padding:12px 18px;background:#dcfce7;border:1px solid #86efac;border-radius:10px;margin-bottom:20px;font-size:13px;font-weight:700;color:#166534;">
-            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/></svg>
-            {{ session('sukses') }}
+        {{-- ── Toast Notification ── --}}
+        <div id="adToast" class="ad-toast success" role="alert" aria-live="polite">
+            <div class="ad-toast-icon" id="adToastIcon">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/></svg>
+            </div>
+            <div class="ad-toast-body">
+                <p class="ad-toast-title" id="adToastTitle">Berhasil</p>
+                <p class="ad-toast-sub" id="adToastSub"></p>
+            </div>
         </div>
+
+        @if(session('sukses'))
+        <script>document.addEventListener('DOMContentLoaded',()=>adShowToast('success','Berhasil','{{ addslashes(session('sukses')) }}'));</script>
         @endif
 
-        {{-- â”€â”€ Page Header â”€â”€ --}}
+        {{-- ── Page Header ── --}}
         <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;">
             <div>
                 <h1 class="ad-hero-title">Arsip Digital</h1>
@@ -442,9 +540,29 @@
                             <svg width="28" height="28" fill="none" stroke="#6b21a8" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
                         </div>
                         @endif
-                        <button class="ad-more-btn" onclick="event.stopPropagation()">
-                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M4.5 12a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" clip-rule="evenodd"/></svg>
-                        </button>
+                        <div class="ad-dropdown">
+                            <button class="ad-more-btn"
+                                onclick="event.stopPropagation(); adToggleMenu({{ $item->id }}, this)">
+                                <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M4.5 12a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" clip-rule="evenodd"/></svg>
+                            </button>
+                            <div class="ad-dropdown-menu" id="ddMenu-{{ $item->id }}">
+                                <button class="ad-dropdown-item"
+                                    onclick="event.stopPropagation()"
+                                    wire:click="editArsip({{ $item->id }})">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
+                                    Edit
+                                </button>
+                                <div class="ad-dropdown-sep"></div>
+                                @if(\App\Support\RoleAccess::canManageArsip())
+                                <button class="ad-dropdown-item danger"
+                                    onclick="event.stopPropagation()"
+                                    wire:click="hapusArsip({{ $item->id }})">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                                    Hapus
+                                </button>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                     <p class="ad-item-name" title="{{ $item->nama_dokumen }}">{{ $item->nama_dokumen }}</p>
                     <p class="ad-item-meta">
@@ -903,10 +1021,147 @@
         });
 
         /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Hover animation (grid items) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-        document.querySelectorAll('.ad-item').forEach(card => {
-            card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-3px)');
-            card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+        /* ─────────── Dropdown toggle ─────────── */
+        function adToggleMenu(id, btn) {
+            const menu = document.getElementById('ddMenu-' + id);
+            const isOpen = menu.classList.contains('open');
+            // Close all
+            document.querySelectorAll('.ad-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+            if (!isOpen) menu.classList.add('open');
+        }
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.ad-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+        });
+
+        /* ─────────── Toast ─────────── */
+        let adToastTimer = null;
+        function adShowToast(type, title, sub) {
+            const toast  = document.getElementById('adToast');
+            const icon   = document.getElementById('adToastIcon');
+            const tTitle = document.getElementById('adToastTitle');
+            const tSub   = document.getElementById('adToastSub');
+            if (!toast) return;
+
+            toast.className = 'ad-toast ' + type;
+            tTitle.textContent = title;
+            tSub.textContent   = sub || '';
+
+            if (type === 'success') {
+                icon.innerHTML = '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd"/></svg>';
+            } else {
+                icon.innerHTML = '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clip-rule="evenodd"/></svg>';
+            }
+
+            clearTimeout(adToastTimer);
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+                adToastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+            });
+        }
+
+        /* ─────────── Livewire events ─────────── */
+        document.addEventListener('livewire:initialized', () => {
+            Livewire.on('arsip-deleted', ({ nama }) => {
+                adShowToast('danger', 'Arsip Dihapus', '"' + nama + '" berhasil dihapus.');
+            });
         });
     </script>
+
+    {{-- ── Modal Konfirmasi Hapus (Livewire) ── --}}
+    @if($this->modalHapusTerbuka)
+    <div class="ad-modal-overlay" style="display:flex;" wire:click.self="batalHapus">
+        <div class="ad-modal-danger-box">
+            {{-- Header gradient --}}
+            <div class="ad-modal-danger-header">
+                <div class="ad-modal-danger-icon">
+                    <svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    </svg>
+                </div>
+                <p class="ad-modal-danger-title">Hapus Arsip?</p>
+            </div>
+            {{-- Body --}}
+            <div class="ad-modal-danger-body">
+                <p class="ad-modal-danger-sub">Anda akan menghapus arsip berikut secara permanen:</p>
+                <div class="ad-modal-danger-name-badge">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                    {{ $this->hapusNama }}
+                </div>
+                <div class="ad-modal-danger-warn">
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>
+                    Tindakan ini tidak dapat dibatalkan
+                </div>
+                <div class="ad-modal-danger-btns">
+                    <button type="button" class="ad-btn-cancel-del" wire:click="batalHapus">
+                        Batal
+                    </button>
+                    <button type="button" class="ad-btn-danger" wire:click="eksekusiHapus">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+                        Hapus Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── Modal Edit Arsip (Livewire) ── --}}
+    @if($this->modalEditTerbuka)
+    <div class="ad-modal-overlay" style="display:flex;" wire:click.self="tutupModalEdit">
+        <div class="ad-modal-box">
+            <div class="ad-modal-head">
+                <div>
+                    <p class="ad-modal-title">Edit Dokumen</p>
+                    <p class="ad-modal-sub">Perbarui informasi arsip digital</p>
+                </div>
+                <button class="ad-modal-close" wire:click="tutupModalEdit">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="ad-modal-body">
+                <div>
+                    <label class="ad-field-label">Nama Dokumen *</label>
+                    <input type="text" class="ad-field-input" wire:model="editNama" placeholder="Nama dokumen">
+                    @error('editNama')<span style="font-size:11px;color:#dc2626;margin-top:3px;display:block;">{{ $message }}</span>@enderror
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div>
+                        <label class="ad-field-label">Kategori *</label>
+                        <select class="ad-field-select" wire:model="editKategori">
+                            <option>Surat Masuk</option>
+                            <option>Surat Keluar</option>
+                            <option>SK Guru/Staff</option>
+                            <option>Ijazah/Sertifikat</option>
+                            <option>Laporan</option>
+                            <option>Umum</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="ad-field-label">Klasifikasi *</label>
+                        <select class="ad-field-select" wire:model="editKlasifikasi">
+                            <option>Biasa</option>
+                            <option>Penting</option>
+                            <option>Terbatas</option>
+                            <option>Rahasia</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="ad-field-label">Keterangan</label>
+                    <textarea class="ad-field-input" wire:model="editKeterangan" rows="3"
+                              placeholder="Catatan atau keterangan tambahan..." style="resize:vertical;"></textarea>
+                </div>
+                <div class="ad-modal-footer">
+                    <button type="button" class="ad-btn-out" wire:click="tutupModalEdit">Batal</button>
+                    <button type="button" class="ad-btn-pri" wire:click="simpanEdit">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
 </x-filament-panels::page>

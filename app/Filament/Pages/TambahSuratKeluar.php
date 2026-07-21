@@ -24,11 +24,11 @@ class TambahSuratKeluar extends Page
     protected static ?string $title = 'Tambah Surat Keluar';
 
     public string $nomor_surat = '';
+    public string $no_berkas = '';
     public string $tanggal_surat = '';
-    public string $tujuan = '';
+    public string $alamat_tujuan = '';
     public string $perihal = '';
-    public string $isi_surat = '';
-    public string $kategori = 'Biasa';
+    public string $keterangan = '';
     public string $status_action = 'draft';
 
     /** @var array<int, TemporaryUploadedFile>|TemporaryUploadedFile|null */
@@ -36,7 +36,6 @@ class TambahSuratKeluar extends Page
 
     public function mount(): void
     {
-        $this->nomor_surat = SuratKeluarModel::generateNomorSurat();
         $this->tanggal_surat = now()->format('Y-m-d');
     }
 
@@ -59,41 +58,44 @@ class TambahSuratKeluar extends Page
         $this->redirect(SuratKeluar::getUrl());
     }
 
-    private function rules(bool $requireIsi): array
+    private function rules(bool $requireKeterangan): array
     {
         $rules = [
+            'nomor_surat'   => 'required|string|max:100',
+            'no_berkas'     => 'nullable|string|max:100',
             'tanggal_surat' => 'required|date',
-            'tujuan' => 'required|string|max:255',
-            'perihal' => 'required|string|max:255',
+            'alamat_tujuan' => 'required|string|max:255',
+            'perihal'       => 'required|string|max:255',
             'lampiranFiles.*' => 'nullable|file|max:10240',
         ];
-        if ($requireIsi) $rules['isi_surat'] = 'required|string|min:10';
+        if ($requireKeterangan) $rules['keterangan'] = 'required|string|min:5';
         return $rules;
     }
 
     private function messages(): array
     {
         return [
-            'tujuan.required' => 'Tujuan surat wajib diisi.',
-            'perihal.required' => 'Perihal surat wajib diisi.',
-            'isi_surat.required' => 'Isi surat wajib diisi sebelum diajukan.',
-            'isi_surat.min' => 'Isi surat terlalu singkat.',
-            'lampiranFiles.*.max' => 'Lampiran maksimal 10 MB per file.',
+            'nomor_surat.required'    => 'No. Urut wajib diisi.',
+            'alamat_tujuan.required'  => 'Alamat tujuan wajib diisi.',
+            'perihal.required'        => 'Perihal surat wajib diisi.',
+            'keterangan.required'     => 'Keterangan wajib diisi sebelum diajukan.',
+            'keterangan.min'          => 'Keterangan terlalu singkat.',
+            'lampiranFiles.*.max'     => 'Lampiran maksimal 10 MB per file.',
         ];
     }
 
     private function payload(string $status): array
     {
         return [
-            'nomor_surat' => $this->nomor_surat,
+            'nomor_surat'   => $this->nomor_surat,
+            'no_berkas'     => $this->no_berkas,
             'tanggal_surat' => $this->tanggal_surat,
-            'tujuan' => $this->tujuan,
-            'perihal' => $this->perihal,
-            'isi_surat' => $this->isi_surat,
-            'kategori' => $this->kategori,
-            'status' => $status,
-            'lampiran' => $this->storeLampiran(),
-            'dibuat_oleh' => auth()->id(),
+            'tujuan'        => $this->alamat_tujuan,
+            'perihal'       => $this->perihal,
+            'isi_surat'     => $this->keterangan,
+            'status'        => $status,
+            'lampiran'      => $this->storeLampiran(),
+            'dibuat_oleh'   => auth()->id(),
         ];
     }
 
