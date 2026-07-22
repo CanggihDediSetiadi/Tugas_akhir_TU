@@ -221,16 +221,16 @@
         {{-- Page Header --}}
         <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;">
             <div>
-                <h1 class="dp-hero-title">Disposisi Surat</h1>
-                <p class="dp-hero-sub">Teruskan dan kelola disposisi surat masuk SMAN 4 Surabaya.</p>
+                <h1 class="dp-hero-title">{{ \App\Support\RoleAccess::isDisposisiRecipient() ? 'Disposisi Saya' : 'Disposisi Surat' }}</h1>
+                <p class="dp-hero-sub">{{ \App\Support\RoleAccess::isDisposisiRecipient() ? 'Lihat dan tindak lanjuti disposisi yang ditujukan kepada Anda.' : 'Teruskan dan kelola disposisi surat masuk SMAN 4 Surabaya.' }}</p>
             </div>
         </div>
 
         {{-- Stat Cards --}}
         @php
             $disposisiQuery = \App\Models\Disposisi::with('suratMasuk')->orderBy('created_at','desc');
-            if (\App\Support\RoleAccess::isTeacher()) {
-                $disposisiQuery->forRecipients(\App\Support\RoleAccess::teacherDisposisiRecipients());
+            if (\App\Support\RoleAccess::isDisposisiRecipient()) {
+                $disposisiQuery->forRecipients(\App\Support\RoleAccess::disposisiRecipients());
             }
             $disposisiList = $disposisiQuery->get();
             $total    = $disposisiList->count();
@@ -260,11 +260,11 @@
                 <div class="dp-stat-bg">
                     <svg width="90" height="90" fill="none" stroke="#dc2626" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
                 </div>
-                <p class="dp-stat-lbl">Surat Belum Disposisi</p>
-                <p class="dp-stat-val" style="color:#dc2626;">{{ $belumDisposisi }}</p>
+                <p class="dp-stat-lbl">{{ \App\Support\RoleAccess::isDisposisiRecipient() ? 'Menunggu' : 'Surat Belum Disposisi' }}</p>
+                <p class="dp-stat-val" style="color:#dc2626;">{{ \App\Support\RoleAccess::isDisposisiRecipient() ? $pending : $belumDisposisi }}</p>
                 <div class="dp-stat-trend tr-red">
                     <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd"/></svg>
-                    Segera ditindak
+                    {{ \App\Support\RoleAccess::isDisposisiRecipient() ? 'Perlu ditindaklanjuti' : 'Segera ditindak' }}
                 </div>
             </div>
 

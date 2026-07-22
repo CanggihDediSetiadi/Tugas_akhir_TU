@@ -108,29 +108,30 @@
     </style>
 
     <div style="margin-top:-4px;">
-        @if(\App\Support\RoleAccess::isTeacher())
+        @if(\App\Support\RoleAccess::isDisposisiRecipient())
         @php
-            $teacherDisposisi = \App\Models\Disposisi::with('suratMasuk')
-                ->forRecipients(\App\Support\RoleAccess::teacherDisposisiRecipients())
+            $assignedDisposisi = \App\Models\Disposisi::with('suratMasuk')
+                ->forRecipients(\App\Support\RoleAccess::disposisiRecipients())
                 ->latest()
                 ->get();
-            $pendingGuru = $teacherDisposisi->where('status', 'pending')->count();
-            $diprosesGuru = $teacherDisposisi->where('status', 'diproses')->count();
-            $selesaiGuru = $teacherDisposisi->where('status', 'selesai')->count();
+            $pendingSaya = $assignedDisposisi->where('status', 'pending')->count();
+            $diprosesSaya = $assignedDisposisi->where('status', 'diproses')->count();
+            $selesaiSaya = $assignedDisposisi->where('status', 'selesai')->count();
+            $dashboardRole = \App\Support\RoleAccess::isWakasek() ? 'Wakil Kepala Sekolah' : 'Guru';
         @endphp
 
         <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;">
             <div>
-                <h1 class="siatu-hero-title">Dashboard Guru</h1>
+                <h1 class="siatu-hero-title">Dashboard {{ $dashboardRole }}</h1>
                 <p class="siatu-hero-sub">Ringkasan disposisi surat yang menjadi tanggung jawab Anda.</p>
             </div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;">
-            <div class="siatu-stat-card"><p class="siatu-stat-label">Disposisi Saya</p><p class="siatu-stat-value">{{ $teacherDisposisi->count() }}</p><div class="siatu-stat-trend trend-blue">Total tugas</div></div>
-            <div class="siatu-stat-card"><p class="siatu-stat-label">Menunggu</p><p class="siatu-stat-value" style="color:#924700;">{{ $pendingGuru }}</p><div class="siatu-stat-trend trend-red">Perlu ditindaklanjuti</div></div>
-            <div class="siatu-stat-card"><p class="siatu-stat-label">Diproses</p><p class="siatu-stat-value" style="color:#1e40af;">{{ $diprosesGuru }}</p><div class="siatu-stat-trend trend-blue">Sedang berjalan</div></div>
-            <div class="siatu-stat-card"><p class="siatu-stat-label">Selesai</p><p class="siatu-stat-value" style="color:#166534;">{{ $selesaiGuru }}</p><div class="siatu-stat-trend trend-green">Sudah selesai</div></div>
+            <div class="siatu-stat-card"><p class="siatu-stat-label">Disposisi Saya</p><p class="siatu-stat-value">{{ $assignedDisposisi->count() }}</p><div class="siatu-stat-trend trend-blue">Total tugas</div></div>
+            <div class="siatu-stat-card"><p class="siatu-stat-label">Menunggu</p><p class="siatu-stat-value" style="color:#924700;">{{ $pendingSaya }}</p><div class="siatu-stat-trend trend-red">Perlu ditindaklanjuti</div></div>
+            <div class="siatu-stat-card"><p class="siatu-stat-label">Diproses</p><p class="siatu-stat-value" style="color:#1e40af;">{{ $diprosesSaya }}</p><div class="siatu-stat-trend trend-blue">Sedang berjalan</div></div>
+            <div class="siatu-stat-card"><p class="siatu-stat-label">Selesai</p><p class="siatu-stat-value" style="color:#166534;">{{ $selesaiSaya }}</p><div class="siatu-stat-trend trend-green">Sudah selesai</div></div>
         </div>
 
         <div class="siatu-card" style="margin-bottom:8px;">
@@ -145,7 +146,7 @@
                 <table class="siatu-table">
                     <thead><tr><th style="text-align:left;">Perihal</th><th style="text-align:left;">Instruksi</th><th style="text-align:center;">Status</th></tr></thead>
                     <tbody>
-                        @forelse($teacherDisposisi->take(5) as $item)
+                        @forelse($assignedDisposisi->take(5) as $item)
                         <tr>
                             <td style="font-weight:700;">{{ \Illuminate\Support\Str::limit($item->suratMasuk?->perihal ?? '-', 45) }}</td>
                             <td>{{ \Illuminate\Support\Str::limit($item->instruksi ?: '-', 70) }}</td>
@@ -413,4 +414,3 @@
     </script>
 
 </x-filament-panels::page>
-

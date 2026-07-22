@@ -397,7 +397,7 @@
                 <svg width="28" height="28" fill="none" stroke="#1e40af" stroke-width="1.6" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px;"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
                 <div>
                     <p style="font-size:14px;font-weight:800;color:#1e40af;margin-bottom:6px;">Tips Manajemen Role</p>
-                    <p style="font-size:12.5px;color:#1e3a8a;line-height:1.65;">Role <strong>Staf Tata Usaha</strong> memiliki akses penuh untuk administrasi persuratan. Role <strong>Kepala Sekolah</strong> berfokus pada disposisi dan monitoring. Role <strong>Guru</strong> hanya menindaklanjuti disposisi yang ditugaskan. Tinjau ulang hak akses setiap semester.</p>
+                    <p style="font-size:12.5px;color:#1e3a8a;line-height:1.65;">Role <strong>Staf Tata Usaha</strong> memiliki akses penuh untuk administrasi persuratan. Role <strong>Kepala Sekolah</strong> berfokus pada disposisi dan monitoring. Role <strong>Wakasek</strong> dan <strong>Guru</strong> hanya melihat dashboard serta menindaklanjuti disposisi yang ditugaskan. Tinjau ulang hak akses setiap semester.</p>
                 </div>
             </div>
 

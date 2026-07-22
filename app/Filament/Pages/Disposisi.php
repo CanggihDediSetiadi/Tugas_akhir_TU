@@ -180,9 +180,9 @@ class Disposisi extends Page
     {
         abort_unless(RoleAccess::canFollowUpDisposisi(), 403);
 
-        if (RoleAccess::isTeacher()) {
+        if (RoleAccess::isDisposisiRecipient()) {
             $penerima = $disposisi->penerima_pilihan ?: [$disposisi->diteruskan_ke];
-            abort_unless(array_intersect($penerima, RoleAccess::teacherDisposisiRecipients()), 403);
+            abort_unless(array_intersect($penerima, RoleAccess::disposisiRecipients()), 403);
         }
     }
 

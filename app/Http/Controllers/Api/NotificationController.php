@@ -16,41 +16,47 @@ class NotificationController extends Controller
     {
         $user = $request->user();
 
-        $suratMasukIds = SuratMasuk::query()->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
-        $suratKeluarIds = SuratKeluar::query()->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $isRecipient = RoleAccess::isDisposisiRecipient($user);
+        $suratMasukIds = $isRecipient ? [] : SuratMasuk::query()->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $suratKeluarIds = $isRecipient ? [] : SuratKeluar::query()->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
 
         $disposisiQuery = Disposisi::query();
 
-        if (RoleAccess::isTeacher($user)) {
-            $disposisiQuery->forRecipients(RoleAccess::teacherDisposisiRecipients($user));
+        if ($isRecipient) {
+            $disposisiQuery->forRecipients(RoleAccess::disposisiRecipients($user));
         }
 
         $disposisiIds = $disposisiQuery->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
 
-        return response()->json([
-            'items' => [
-                [
-                    'key' => 'surat_masuk',
-                    'label' => 'Surat masuk baru',
-                    'ids' => $suratMasukIds,
-                    'latest_id' => max($suratMasukIds ?: [0]),
-                    'module' => 'Surat Masuk',
-                ],
-                [
-                    'key' => 'disposisi',
-                    'label' => 'Disposisi baru',
-                    'ids' => $disposisiIds,
-                    'latest_id' => max($disposisiIds ?: [0]),
-                    'module' => 'Disposisi',
-                ],
-                [
-                    'key' => 'surat_keluar',
-                    'label' => 'Surat keluar baru',
-                    'ids' => $suratKeluarIds,
-                    'latest_id' => max($suratKeluarIds ?: [0]),
-                    'module' => 'Surat Keluar',
-                ],
+        $items = [
+            [
+                'key' => 'surat_masuk',
+                'label' => 'Surat masuk baru',
+                'ids' => $suratMasukIds,
+                'latest_id' => max($suratMasukIds ?: [0]),
+                'module' => 'Surat Masuk',
             ],
-        ])->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+            [
+                'key' => 'disposisi',
+                'label' => 'Disposisi baru',
+                'ids' => $disposisiIds,
+                'latest_id' => max($disposisiIds ?: [0]),
+                'module' => 'Disposisi',
+            ],
+            [
+                'key' => 'surat_keluar',
+                'label' => 'Surat keluar baru',
+                'ids' => $suratKeluarIds,
+                'latest_id' => max($suratKeluarIds ?: [0]),
+                'module' => 'Surat Keluar',
+            ],
+        ];
+
+        if ($isRecipient) {
+            $items = array_values(array_filter($items, fn (array $item) => $item['key'] === 'disposisi'));
+        }
+
+        return response()->json(['items' => $items])
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
     }
 }
